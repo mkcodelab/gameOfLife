@@ -12,18 +12,65 @@ const rows = canvas.height / resolution;
 function buildGrid() {
   return new Array(cols).fill(null)
     .map( () => new Array(rows).fill(null)
-      .map( () => Math.floor(Math.random() * 2)));
+      .map( () => 0)
+      );
 }
 
 let grid = buildGrid();
 
 
+//finding cell x y coordinates
+canvas.addEventListener('click', e => {
+ 
+  let map = canvas.getBoundingClientRect();
+  let cellX = Math.floor((e.clientX - map.left) / resolution)
+  let cellY = Math.floor((e.clientY - map.top) / resolution)
+  
+  // grid[cellX][cellY] = 1;
+  if (grid[cellX][cellY] === 0) {
+    grid[cellX][cellY] = 1;
+    return;
+  }
+  if (grid[cellX][cellY] === 1) {
+    grid[cellX][cellY] = 0; 
+    return;
+  }
+
+  // add clickable cell grid
+})
+
+// const gameLoop = requestAnimationFrame(update);
+
+let start = false;
+
 function update() {
-  grid = nextGen(grid);
+  if (start) {
+    grid = nextGen(grid);
+  }
   render(grid);
-  requestAnimationFrame(update);
 }
-requestAnimationFrame(update)
+const updateInterval = setInterval(update, 100);
+
+// function update() {
+//   if (start) {
+//     grid = nextGen(grid);
+//   }
+//   render(grid);
+//   requestAnimationFrame(update);
+// }
+// update()
+
+function toggleStart() {
+  start = !start;
+}
+addEventListener('keyup', e => {
+ if (e.key === ' ') {
+   toggleStart()
+   console.log("game On : ", start)
+ }
+})
+
+
 
 function nextGen(grid) {
   //copying the grid to new array
@@ -77,8 +124,10 @@ function render(grid) {
   for (let col = 0; col < grid.length; col++) {
     for (let row = 0; row < grid[col].length; row ++) {
       const cell = grid[col][row];
-      const color = Math.floor(Math.random() * 20 + 20);
-      ctx.strokeStyle = '#222';
+      // const color = Math.floor(Math.random() * 20 + 20);
+      
+      const color = '22'
+      ctx.strokeStyle = '#666';
       ctx.beginPath();
       ctx.rect(col * resolution, row * resolution, resolution, resolution);
       ctx.fillStyle = cell ? `hsla(${color}, 100%, 50%)` : 'black';
