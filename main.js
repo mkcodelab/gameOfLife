@@ -1,13 +1,19 @@
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
-const resolution = 10;
+let resolution = 10;
 
-canvas.width = 800;
-canvas.height = 800;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+// canvas.width = 1000;
+// canvas.height = 1000;
+let cameraZoom = 1
+// let MAX_ZOOM = 5
+// let MIN_ZOOM = 0.1
+// let SCROLL_SENSITIVITY = 0.0005
 
-const cols = canvas.width / resolution;
-const rows = canvas.height / resolution;
+const cols = Math.floor(canvas.width / resolution);
+const rows = Math.floor(canvas.height / resolution);
 
 function buildGrid() {
   return new Array(cols).fill(null)
@@ -18,29 +24,31 @@ function buildGrid() {
 
 let grid = buildGrid();
 
-
+// add clickable cell grid
 //finding cell x y coordinates
 canvas.addEventListener('click', e => {
  
   let map = canvas.getBoundingClientRect();
+  // resolution has to be variable based on zoom (for example + 0.1)
+  // or maybe its not good idea
   let cellX = Math.floor((e.clientX - map.left) / resolution)
   let cellY = Math.floor((e.clientY - map.top) / resolution)
   
   // grid[cellX][cellY] = 1;
   if (grid[cellX][cellY] === 0) {
     grid[cellX][cellY] = 1;
+    console.log('cell : ', grid[cellX][cellY], 'x: ', cellX, 'y: ', cellY);
     return;
   }
   if (grid[cellX][cellY] === 1) {
     grid[cellX][cellY] = 0; 
+    console.log('cell : ', grid[cellX][cellY], 'x: ', cellX, 'y: ', cellY);
     return;
   }
 
-  // add clickable cell grid
 })
 
-// const gameLoop = requestAnimationFrame(update);
-
+// game loop 
 let start = false;
 
 function update() {
@@ -51,22 +59,41 @@ function update() {
 }
 const updateInterval = setInterval(update, 100);
 
-// function update() {
-//   if (start) {
-//     grid = nextGen(grid);
-//   }
-//   render(grid);
-//   requestAnimationFrame(update);
-// }
-// update()
-
 function toggleStart() {
   start = !start;
 }
+
+// function updateZoomState() {
+//   console.log('zoom: ', cameraZoom)
+//   ctx.clearRect(0, 0, canvas.width, canvas.height);
+//   ctx.scale(cameraZoom, cameraZoom);
+// }
+
+function clr() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+}
+
 addEventListener('keyup', e => {
+  console.log(e.key)
  if (e.key === ' ') {
    toggleStart()
    console.log("game On : ", start)
+ }
+ if(e.key === 'ArrowUp') {
+  // cameraZoom += 0.01;
+  // updateZoomState();
+  clr()
+  ctx.scale(1.1, 1.1);
+  // resolution += 0.1
+ }
+ if(e.key === 'ArrowDown') {
+  //  cameraZoom -= 0.01;
+  //  updateZoomState();
+  clr()
+  ctx.scale(0.9, 0.9);
+  // resolution -= 0.1
+
  }
 })
 
@@ -74,6 +101,7 @@ addEventListener('keyup', e => {
 
 function nextGen(grid) {
   //copying the grid to new array
+  // change generating new arr to changing old array for memory saving
   const nextGen = grid.map(arr => [...arr]);
 
 
@@ -120,21 +148,68 @@ function nextGen(grid) {
   return nextGen;
 }
 
+let cellColor = '#5f5'
+
+const colorInput = document.querySelector('#colorInput');
+colorInput.addEventListener('change', () => {
+  cellColor = colorInput.value;
+})
+
+
 function render(grid) {
+  // repair the zoom
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
   for (let col = 0; col < grid.length; col++) {
     for (let row = 0; row < grid[col].length; row ++) {
       const cell = grid[col][row];
       // const color = Math.floor(Math.random() * 20 + 20);
+      // const color = '22'
+
+
+      ctx.strokeStyle = '#222';
+     
+        // console.log('alive')
+        ctx.beginPath()
+        
+        // ctx.fillStyle = cellColor;
+        ctx.rect(col * resolution, row * resolution, resolution, resolution);
+        
+        if (cell == 1) {
+          // ctx.fillStyle = cell ? cellColor : 'black';
+          ctx.fillStyle = cellColor;
+          ctx.fill()
+        }
+        ctx.stroke();
+        ctx.closePath();
       
-      const color = '22'
-      ctx.strokeStyle = '#666';
-      ctx.beginPath();
-      ctx.rect(col * resolution, row * resolution, resolution, resolution);
-      ctx.fillStyle = cell ? `hsla(${color}, 100%, 50%)` : 'black';
-      ctx.fill();
-      ctx.stroke();
-      ctx.closePath();
+      
     
     }
   }
 }
+
+
+function adjustZoom(zoomAmount, zoomFactor)
+{
+        if (zoomAmount)
+        {
+            cameraZoom += zoomAmount
+        }
+        else if (zoomFactor)
+        {
+            console.log(zoomFactor)
+            cameraZoom = zoomFactor*lastZoom
+        }
+        
+        cameraZoom = Math.min( cameraZoom, MAX_ZOOM )
+        cameraZoom = Math.max( cameraZoom, MIN_ZOOM )
+        
+        console.log(zoomAmount)
+
+}
+
+
+
+// canvas.addEventListener( 'wheel', (e) => adjustZoom(e.deltaY*SCROLL_SENSITIVITY))

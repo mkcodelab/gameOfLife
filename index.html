@@ -8,16 +8,26 @@
   <style>
     body {
       background: #000;
+      overflow: hidden;
     }
     canvas {
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      border: 1px solid white;
+      /* border: 1px solid white; */
+    }
+    #colorInput {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      visibility: hidden;
     }
   </style>
 </head>
 <body>
+  <nav>
+    <input type="color" id="colorInput">
+  </nav>
   <canvas></canvas>
   <script src="main.js"></script>
 </body>
